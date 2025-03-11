@@ -1,16 +1,26 @@
-﻿namespace dotnet_api.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
+namespace dotnet_api.Models;
+
+[Table("Produtos")]
 public class Produto
 {
+    [Key]
     public int Id { get; set; }
 
-    public required string Nome { get; set; }
+    [Required]
+    [StringLength(255)]
+    public string? Nome { get; set; }
 
+    [StringLength(255)]
     public string? Descricao { get; set; }
 
+    [Required]
+    [Column(TypeName = "decimal(10,2)")]
     public decimal Preco { get; set; }
 
-    public float Estoque { get; set; }
+    public double Estoque { get; set; }
 
     public DateTime DataCadastro { get; set; }
 
