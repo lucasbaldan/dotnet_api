@@ -1,30 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace dotnet_api.Models;
-
-[Table("Produtos")]
 public class Produto
 {
-    [Key]
     public int Id { get; set; }
-
-    [Required]
-    [StringLength(255)]
     public string? Nome { get; set; }
-
-    [StringLength(255)]
     public string? Descricao { get; set; }
-
-    [Required]
-    [Column(TypeName = "decimal(10,2)")]
     public decimal Preco { get; set; }
-
     public double Estoque { get; set; }
-
     public DateTime DataCadastro { get; set; }
-
     public int CategoriaId { get; set; }
 
     [JsonIgnore]

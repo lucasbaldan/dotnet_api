@@ -1,0 +1,10 @@
+-> CRIA A MIGRAÇÃO PARA DENTRO DA PASTA DATABASE 
+dotnet ef migrations add NomeDaMigration -o Database/Migrations
+
+-> Se tiver tabela nova com chave estrangeira, tem que colocar a propriedade do update manual no arquivo de migration
+onUpdate: ReferentialAction.Cascade
+
+-> EXECUTA A MIGRAÇÃO QUE NÃO FORAM RODADAS AINDA
+dotnet ef database update
+
+

@@ -8,7 +8,7 @@ using dotnet_api.Database;
 
 #nullable disable
 
-namespace dotnet_api.Migrations
+namespace dotnet_api.Database.Migrations
 {
     [DbContext(typeof(BDContext))]
     partial class BDContextModelSnapshot : ModelSnapshot
@@ -31,8 +31,8 @@ namespace dotnet_api.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Descricao")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -41,7 +41,7 @@ namespace dotnet_api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categorias");
+                    b.ToTable("CATEGORIAS", (string)null);
                 });
 
             modelBuilder.Entity("dotnet_api.Models.Produto", b =>
@@ -56,7 +56,9 @@ namespace dotnet_api.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DataCadastro")
-                        .HasColumnType("datetime(6)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Descricao")
                         .HasMaxLength(255)
@@ -77,7 +79,7 @@ namespace dotnet_api.Migrations
 
                     b.HasIndex("CategoriaId");
 
-                    b.ToTable("Produtos");
+                    b.ToTable("PRODUTOS", (string)null);
                 });
 
             modelBuilder.Entity("dotnet_api.Models.Produto", b =>
@@ -85,7 +87,7 @@ namespace dotnet_api.Migrations
                     b.HasOne("dotnet_api.Models.Categoria", "Categoria")
                         .WithMany("Produtos")
                         .HasForeignKey("CategoriaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Categoria");
