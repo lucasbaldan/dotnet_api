@@ -16,19 +16,25 @@ namespace dotnet_api.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Produto>> Get()
+        public async Task<ActionResult<IEnumerable<Produto>>> Get()
         {
-            var produtosConsulta = _db.Produtos.AsNoTracking().ToList();
-            if(produtosConsulta == null || produtosConsulta.Count == 0) return NotFound();
+            try
+            {
+                var produtosConsulta = await _db.Produtos.AsNoTracking().ToListAsync();
+                if (produtosConsulta == null || produtosConsulta.Count == 0) return NotFound();
 
-            return produtosConsulta;
-
+                return produtosConsulta;
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = e.Message });
+            }
         }
 
-        [HttpGet("{id:int}")]
-        public ActionResult<Produto> Get(int id)
+        [HttpGet("{id:int:min(1)}")]
+        public async Task<ActionResult<Produto>> Get(int id)
         {
-            var produtoConsulta = _db.Produtos.AsNoTracking().FirstOrDefault(p => p.Id == id);
+            var produtoConsulta = await _db.Produtos.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
             if (produtoConsulta == null) return NotFound();
 
             return produtoConsulta;
@@ -40,13 +46,13 @@ namespace dotnet_api.Controllers
             _db.Produtos.Add(produto);
             _db.SaveChanges();
 
-            return CreatedAtAction(nameof(Get), new { id = produto.Id }, new { id = produto.Id});
+            return CreatedAtAction(nameof(Get), new { id = produto.Id }, new { id = produto.Id });
         }
 
         [HttpPut("{id:int}")]
         public ActionResult Update(int id, Produto produto)
         {
-            if(id != produto.Id) return BadRequest();
+            if (id != produto.Id) return BadRequest();
 
             _db.Entry(produto).State = EntityState.Modified;
             _db.SaveChanges();
