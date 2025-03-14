@@ -1,7 +1,9 @@
 ﻿using dotnet_api.Database;
 using dotnet_api.Models;
+using dotnet_api.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace dotnet_api.Controllers
 {
@@ -9,65 +11,57 @@ namespace dotnet_api.Controllers
     [ApiController]
     public class ProdutosController : ControllerBase
     {
-        private readonly BDContext _db;
-        public ProdutosController(BDContext db)
+        private readonly IProdutoRepository _Repository;
+        public ProdutosController(IProdutoRepository repository)
         {
-            _db = db;
+            _Repository = repository;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Produto>>> Get()
         {
-            try
-            {
-                var produtosConsulta = await _db.Produtos.AsNoTracking().ToListAsync();
-                if (produtosConsulta == null || produtosConsulta.Count == 0) return NotFound();
-
-                return produtosConsulta;
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = e.Message });
-            }
+            var produtos = await _Repository.Get();
+            if(produtos == null) return NotFound();
+            return Ok(produtos);
         }
 
         [HttpGet("{id:int:min(1)}")]
         public async Task<ActionResult<Produto>> Get(int id)
         {
-            var produtoConsulta = await _db.Produtos.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+            var produtoConsulta = await _Repository.Get(id);
             if (produtoConsulta == null) return NotFound();
 
-            return produtoConsulta;
+            return Ok(produtoConsulta);
         }
 
         [HttpPost]
-        public ActionResult Create(Produto produto)
+        public async Task<ActionResult> Create(Produto produto)
         {
-            _db.Produtos.Add(produto);
-            _db.SaveChanges();
+            Produto produtoCriado = await _Repository.Create(produto);
 
-            return CreatedAtAction(nameof(Get), new { id = produto.Id }, new { id = produto.Id });
+            if(produtoCriado == null) return BadRequest();
+
+            return CreatedAtAction(nameof(Get), new { id = produtoCriado.Id }, new { id = produtoCriado.Id });
         }
 
-        [HttpPut("{id:int}")]
-        public ActionResult Update(int id, Produto produto)
+        [HttpPut("{id:int:min(1)}")]
+        public async Task<ActionResult> Update(int id, Produto produto)
         {
-            if (id != produto.Id) return BadRequest();
+            if (id != produto.Id) throw new FormatException("A requisição foi enviada de maneira incorreta");
 
-            _db.Entry(produto).State = EntityState.Modified;
-            _db.SaveChanges();
+            Produto produtoAtualizado = await _Repository.Update(produto);
 
-            return Ok(produto);
+            return Ok(produtoAtualizado);
         }
 
-        [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        [HttpDelete("{id:int:min(1)}")]
+        public async Task<ActionResult> Delete(int id)
         {
-            Produto? produto = _db.Produtos.FirstOrDefault(p => p.Id == id);
+            Produto? produto = await _Repository.Get(id);
             if (produto == null) return NotFound();
 
-            _db.Produtos.Remove(produto);
-            _db.SaveChanges();
+            var result = await _Repository.Delete(produto);
+            if(!result) return BadRequest();
 
             return Ok();
         }
