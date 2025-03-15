@@ -14,7 +14,7 @@ public class ProdutoRepository : IProdutoRepository
 
     public async Task<IEnumerable<Produto>> Get()
     {
-         return await _db.Produtos.AsNoTracking().ToListAsync();
+        return await _db.Produtos.AsNoTracking().ToListAsync();
     }
     public async Task<Produto?> Get(int id)
     {
@@ -22,29 +22,25 @@ public class ProdutoRepository : IProdutoRepository
 
         return await _db.Produtos.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
     }
-    public async Task<Produto> Create(Produto produto)
+    public Produto Create(Produto produto)
     {
         ArgumentNullException.ThrowIfNull(produto);
 
         _db.Produtos.Add(produto);
-        await _db.SaveChangesAsync();
         return produto;
     }
-    public async Task<Produto> Update(Produto produto)
+    public Produto Update(Produto produto)
     {
         ArgumentNullException.ThrowIfNull(produto);
 
         _db.Entry(produto).State = EntityState.Modified;
-        await _db.SaveChangesAsync();
         return produto;
     }
-    public async Task<bool> Delete(Produto produto)
+    public void Delete(Produto produto)
     {
         ArgumentNullException.ThrowIfNull(produto);
 
         _db.Produtos.Remove(produto);
-        var result = await _db.SaveChangesAsync();
-        return true;
     }
 }
 
@@ -52,7 +48,7 @@ public interface IProdutoRepository
 {
     Task<IEnumerable<Produto>> Get();
     Task<Produto?> Get(int id);
-    Task<Produto> Create(Produto produto);
-    Task<Produto> Update(Produto produto);
-    Task<bool> Delete(Produto produto);
+    Produto Create(Produto produto);
+    Produto Update(Produto produto);
+    void Delete(Produto produto);
 }

@@ -1,6 +1,7 @@
 using dotnet_api.Database;
 using dotnet_api.Middlewares;
 using dotnet_api.Repositories;
+using dotnet_api.Repositories.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -22,6 +23,7 @@ if (string.IsNullOrEmpty(connectionString))
 builder.Services.AddDbContext<BDContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
+builder.Services.AddScoped<ITransaction, Transaction>();
 
 
 var app = builder.Build();
