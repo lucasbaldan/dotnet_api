@@ -1,4 +1,5 @@
 using dotnet_api.Database;
+using dotnet_api.DTOs.AutoMapper;
 using dotnet_api.Middlewares;
 using dotnet_api.Repositories;
 using dotnet_api.Repositories.UnitOfWork;
@@ -24,6 +25,8 @@ builder.Services.AddDbContext<BDContext>(options => options.UseMySql(connectionS
 
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<ITransaction, Transaction>();
+
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 
 var app = builder.Build();
