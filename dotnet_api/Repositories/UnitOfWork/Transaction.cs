@@ -20,26 +20,23 @@ namespace dotnet_api.Repositories.UnitOfWork
                 return _produtoRepository ??= new ProdutoRepository(_db);
             }
         }
-        public void Commit()
-        {
-            _db.SaveChanges();
-        }
 
-        public async Task<bool> CommitAsync()
+        public async Task<bool> Commit()
         {
             try
             {
-                return await _db.SaveChangesAsync() > 0;
+                await _db.SaveChangesAsync();
+                return true;
             }
             catch (DbUpdateException ex)
             {
-                Console.WriteLine($"Erro ao salvar alterações no banco: {ex.Message}");
                 return false;
+                throw new Exception($"Erro no banco de dados: {ex.Message}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro inesperado: {ex.Message}");
                 return false;
+                throw new Exception($"Erro no banco de dados: {ex.Message}");
             }
         }
 
@@ -53,8 +50,7 @@ namespace dotnet_api.Repositories.UnitOfWork
     public interface ITransaction
     {
         IProdutoRepository ProdutoRepository { get; }
-        void Commit();
         void Dispose();
-        Task<bool> CommitAsync();
+        Task<bool> Commit();
     }
 }

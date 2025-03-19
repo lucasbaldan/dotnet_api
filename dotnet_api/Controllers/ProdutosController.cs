@@ -2,6 +2,8 @@
 using dotnet_api.DTOs;
 using dotnet_api.Models;
 using dotnet_api.Repositories.UnitOfWork;
+using dotnet_api.Utilities;
+using dotnet_api.Utilities.FilterClasses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace dotnet_api.Controllers
@@ -18,11 +20,12 @@ namespace dotnet_api.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProdutoDTO>>> Get()
+        [HttpPost("getAll")]
+        public async Task<ActionResult<IEnumerable<ProdutoDTO>>> Get([FromQuery] Pagination paginacao, [FromBody] ProdutoFilter? filtro)
         {
-            var produtos = await _transaction.ProdutoRepository.Get();
-            if(produtos == null) return NotFound();
+            var produtos = await _transaction.ProdutoRepository.Get(paginacao, filtro);
+            if (produtos == null) throw new Exception("Ocorreu um erro inesperado ao consultar os registro na base de dados");
+            else if (!produtos.Any()) return NotFound();
             return Ok(_mapper.Map<IEnumerable<ProdutoDTO>>(produtos));
         }
 
@@ -36,24 +39,24 @@ namespace dotnet_api.Controllers
         }
 
         [HttpPost]
-        public ActionResult Create(ProdutoDTO produto)
+        public async Task<ActionResult> Create(ProdutoDTO produto)
         {
             Produto produtoCriado = _transaction.ProdutoRepository.Create(_mapper.Map<Produto>(produto));
 
-            if(produtoCriado == null) return BadRequest();
+            if (produtoCriado == null) return BadRequest();
 
-            _transaction.Commit();
+            await _transaction.Commit();
             return CreatedAtAction(nameof(Get), new { id = produtoCriado.Id }, new { id = produtoCriado.Id });
         }
 
         [HttpPut("{id:int:min(1)}")]
-        public ActionResult Update(int id, ProdutoDTO produto)
+        public async Task<ActionResult> Update(int id, ProdutoDTO produto)
         {
             if (id != produto.Id) throw new FormatException("A requisição foi enviada de maneira incorreta");
 
             Produto produtoAtualizado = _transaction.ProdutoRepository.Update(_mapper.Map<Produto>(produto));
 
-            _transaction.Commit();
+            await _transaction.Commit();
             return Ok(produtoAtualizado);
         }
 
@@ -65,10 +68,7 @@ namespace dotnet_api.Controllers
 
             _transaction.ProdutoRepository.Delete(produto);
 
-            var result = await _transaction.CommitAsync();
-
-            if(!result) 
-                return BadRequest();
+            await _transaction.Commit();
 
             return Ok();
         }
