@@ -1,9 +1,10 @@
 ﻿using dotnet_api.Database.TableConfigurations;
 using dotnet_api.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace dotnet_api.Database;
-public class BDContext : DbContext
+public class BDContext : IdentityDbContext<Usuario>
 {
     public BDContext(DbContextOptions<BDContext> options) : base(options)
     {

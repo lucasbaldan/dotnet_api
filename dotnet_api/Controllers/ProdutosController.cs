@@ -4,6 +4,7 @@ using dotnet_api.Models;
 using dotnet_api.Repositories.UnitOfWork;
 using dotnet_api.Utilities;
 using dotnet_api.Utilities.FilterClasses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace dotnet_api.Controllers
@@ -21,6 +22,7 @@ namespace dotnet_api.Controllers
         }
 
         [HttpPost("getAll")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<ProdutoDTO>>> Get([FromQuery] Pagination paginacao, [FromBody] ProdutoFilter? filtro)
         {
             var produtos = await _transaction.ProdutoRepository.Get(paginacao, filtro);
