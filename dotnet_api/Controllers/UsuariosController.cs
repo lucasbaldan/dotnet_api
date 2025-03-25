@@ -60,6 +60,7 @@ public class UsuariosController : ControllerBase
         var refreshToken = _jwtService.GenerateRefreshToken();
 
         _ = int.TryParse(_config.GetSection("JWT").GetValue<string>("RefreshExpiration"), out int refreshExpiration);
+        _ = int.TryParse(_config.GetSection("JWT").GetValue<string>("AccessExpiration"), out int tokenExpiration);
 
         usuario.RefreshToken = refreshToken;
 
@@ -67,7 +68,12 @@ public class UsuariosController : ControllerBase
 
         await _userManager.UpdateAsync(usuario);
 
-        return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+        return Ok(new
+        {
+            acessToken = new JwtSecurityTokenHandler().WriteToken(token),
+            expirationAt = DateTime.UtcNow.AddMinutes(tokenExpiration),
+            refreshToken = usuario.RefreshToken
+        });
     }
 
     [HttpPost]
@@ -155,7 +161,7 @@ public class UsuariosController : ControllerBase
 
         await _userManager.UpdateAsync(usuario);
 
-        return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(novoAcessToken) });
+        return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(novoAcessToken), refreshToken = novoRefreshToken });
 
     }
 
@@ -179,6 +185,6 @@ public class UsuariosController : ControllerBase
         usuario.RefreshTokenExpiryTime = null;
         await _userManager.UpdateAsync(usuario);
 
-        return Ok(new { message = "Usuário Desconectado com Sucesso" });
+        return Ok(new { message = "Usuário Revogado com Sucesso" });
     }
 }

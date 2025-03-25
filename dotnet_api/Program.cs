@@ -5,17 +5,18 @@ using dotnet_api.Services;
 using dotnet_api.Middlewares;
 using dotnet_api.Repositories;
 using dotnet_api.DTOs.AutoMapper;
-using Microsoft.EntityFrameworkCore;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
 using dotnet_api.Repositories.UnitOfWork;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -26,8 +27,8 @@ if (string.IsNullOrEmpty(connectionString))
 {
     throw new InvalidOperationException("String de conexão não encontrada ou vazia!");
 }
-
 builder.Services.AddDbContext<BDContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+builder.Services.AddIdentity<Usuario, IdentityRole>().AddEntityFrameworkStores<BDContext>().AddDefaultTokenProviders();
 
 var secretKey = builder.Configuration["JWT:SecretKey"] ?? throw new InvalidOperationException("ERRO CRÍTICO! Chave secreta não encontrada!");
 
@@ -54,15 +55,32 @@ builder.Services.AddAuthentication(options =>
     });
 builder.Services.AddAuthorization();
 
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
-builder.Services.AddIdentity<Usuario, IdentityRole>().AddEntityFrameworkStores<BDContext>().AddDefaultTokenProviders();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("https://google.com").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+    });
+});
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", options =>
+    {
+        options.PermitLimit = int.Parse(builder.Configuration["RateLimit:FixedWindow:Limit"] ?? "3");
+        options.Window = TimeSpan.FromSeconds(int.Parse(builder.Configuration["RateLimit:FixedWindow:TimeWindowSeconds"] ?? "5"));
+        options.QueueProcessingOrder = int.Parse(builder.Configuration["RateLimit:FixedWindow:QueueLimit"] ?? "0") > 0 ? QueueProcessingOrder.OldestFirst : 0;
+        options.QueueLimit = int.Parse(builder.Configuration["RateLimit:FixedWindow:QueueLimit"] ?? "0");
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<ITransaction, Transaction>();
-builder.Services.AddScoped<IJWTService, JWTService>();  
+builder.Services.AddScoped<IJWTService, JWTService>();
 
-builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 var app = builder.Build();
 
@@ -73,9 +91,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandlingMiddleware();
-
 app.UseHttpsRedirection();
-
+app.UseStaticFiles();
+app.UseRouting();
+app.UseCors();
+app.UseRateLimiter();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

@@ -6,11 +6,14 @@ using dotnet_api.Utilities;
 using dotnet_api.Utilities.FilterClasses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace dotnet_api.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    //[Authorize]
+    [EnableRateLimiting("fixed")]
     public class ProdutosController : ControllerBase
     {
         private readonly ITransaction _transaction;
@@ -22,7 +25,6 @@ namespace dotnet_api.Controllers
         }
 
         [HttpPost("getAll")]
-        [Authorize]
         public async Task<ActionResult<IEnumerable<ProdutoDTO>>> Get([FromQuery] Pagination paginacao, [FromBody] ProdutoFilter? filtro)
         {
             var produtos = await _transaction.ProdutoRepository.Get(paginacao, filtro);
