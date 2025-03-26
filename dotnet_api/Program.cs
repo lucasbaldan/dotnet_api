@@ -13,6 +13,7 @@ using System.Text.Json.Serialization;
 using dotnet_api.Repositories.UnitOfWork;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,18 @@ builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializ
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader());
+}).AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+});
 
 var connectionString = builder.Configuration.GetConnectionString("Default");
 if (string.IsNullOrEmpty(connectionString))

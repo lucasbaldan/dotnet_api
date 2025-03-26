@@ -1,16 +1,18 @@
 ﻿using AutoMapper;
+using Asp.Versioning;
 using dotnet_api.DTOs;
 using dotnet_api.Models;
-using dotnet_api.Repositories.UnitOfWork;
 using dotnet_api.Utilities;
-using dotnet_api.Utilities.FilterClasses;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using dotnet_api.Repositories.UnitOfWork;
+using dotnet_api.Utilities.FilterClasses;
+using Microsoft.AspNetCore.Authorization;
 
 namespace dotnet_api.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1.0")]
     [ApiController]
     //[Authorize]
     [EnableRateLimiting("fixed")]
