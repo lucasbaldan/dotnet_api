@@ -1,6 +1,7 @@
 using System.Text;
 using dotnet_api.Models;
 using dotnet_api.Database;
+using Asp.Versioning;
 using dotnet_api.Services;
 using dotnet_api.Middlewares;
 using dotnet_api.Repositories;
@@ -13,7 +14,6 @@ using System.Text.Json.Serialization;
 using dotnet_api.Repositories.UnitOfWork;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,7 +41,18 @@ if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("String de conexão não encontrada ou vazia!");
 }
 builder.Services.AddDbContext<BDContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
-builder.Services.AddIdentity<Usuario, IdentityRole>().AddEntityFrameworkStores<BDContext>().AddDefaultTokenProviders();
+
+builder.Services.AddIdentity<Usuario, GrupoUsuarios>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 4;
+    options.Password.RequiredUniqueChars = 0;
+    options.User.RequireUniqueEmail = true;
+
+}).AddEntityFrameworkStores<BDContext>().AddDefaultTokenProviders();
 
 var secretKey = builder.Configuration["JWT:SecretKey"] ?? throw new InvalidOperationException("ERRO CRÍTICO! Chave secreta não encontrada!");
 

@@ -1,11 +1,12 @@
 ﻿using dotnet_api.DTOs;
 using dotnet_api.Models;
+using dotnet_api.Helpers;
 using dotnet_api.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization;
 
 namespace dotnet_api.Controllers;
 
@@ -13,12 +14,12 @@ namespace dotnet_api.Controllers;
 [ApiController]
 public class UsuariosController : ControllerBase
 {
-    private readonly JWTService _jwtService;
+    private readonly IJWTService _jwtService;
     private readonly UserManager<Usuario> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _config;
 
-    public UsuariosController(JWTService jwtService, UserManager<Usuario> userManager, RoleManager<IdentityRole> roleManager, IConfiguration config)
+    public UsuariosController(IJWTService jwtService, UserManager<Usuario> userManager, RoleManager<IdentityRole> roleManager, IConfiguration config)
     {
         _jwtService = jwtService;
         _userManager = userManager;
@@ -30,15 +31,27 @@ public class UsuariosController : ControllerBase
     [Route("login")]
     public async Task<ActionResult> Login([FromBody] LoginDTO loginDTO)
     {
-        var usuario = await _userManager.FindByNameAsync(loginDTO.Username!);
+
+        if(!ModelState.IsValid)
+        {
+            return BadRequest(new ErrorResponse()
+            {
+                StatusCode = 400,
+                Message = "Erro ao efetuar login",
+                Errors = ErrorFormatters.FormatarErrosModel(ModelState),
+                StackTrace = "API Authentication"
+            });
+        }
+
+        var usuario = await _userManager.FindByNameAsync(loginDTO.Username);
         if (usuario is null || await _userManager.CheckPasswordAsync(usuario, loginDTO.Password))
         {
             return Unauthorized(new ErrorResponse()
             {
                 StatusCode = 401,
                 Message = "Usuário ou senha inválidos",
-                Error = "Unauthorized",
-                StackTrace = "API Authentication - API/Controllers/UsuariosControllers"
+                Errors = ["Usuário ou senha inválidos"],
+                StackTrace = "API Authentication"
             });
         }
 
@@ -48,13 +61,6 @@ public class UsuariosController : ControllerBase
             new Claim(ClaimTypes.NameIdentifier, usuario.Id)
         };
 
-        var roles = await _userManager.GetRolesAsync(usuario);
-
-        foreach (var role in roles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
-
         var token = _jwtService.GerarToken(claims, _config);
 
         var refreshToken = _jwtService.GenerateRefreshToken();
@@ -63,7 +69,6 @@ public class UsuariosController : ControllerBase
         _ = int.TryParse(_config.GetSection("JWT").GetValue<string>("AccessExpiration"), out int tokenExpiration);
 
         usuario.RefreshToken = refreshToken;
-
         usuario.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(refreshExpiration);
 
         await _userManager.UpdateAsync(usuario);
@@ -87,9 +92,9 @@ public class UsuariosController : ControllerBase
             return BadRequest(new ErrorResponse()
             {
                 StatusCode = 400,
-                Message = "Usuário já cadastrado na plataforma",
-                Error = "Bad Request",
-                StackTrace = "API Authentication - API/Controllers/UsuariosControllers"
+                Message = "Email já cadastrado para outro usuário na plataforma",
+                Errors = ["Email já cadastrado para outro usuário na plataforma"],
+                StackTrace = "API Authentication"
             });
         }
 
@@ -103,12 +108,12 @@ public class UsuariosController : ControllerBase
         var result = await _userManager.CreateAsync(usuario, register.Password);
         if (!result.Succeeded)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse()
+            return StatusCode(StatusCodes.Status400BadRequest, new ErrorResponse()
             {
                 StatusCode = 400,
                 Message = "Falha ao registrar usuário na plataforma",
-                Error = "Bad Request",
-                StackTrace = "API Authentication - API/Controllers/UsuariosControllers"
+                Errors = ErrorFormatters.FormatarErrosIdentity(result),
+                StackTrace = "API Authentication"
             });
         }
         return Ok(new { message = "Usuário criado com sucesso" });
@@ -124,8 +129,8 @@ public class UsuariosController : ControllerBase
             {
                 StatusCode = 400,
                 Message = "Token de atualização inválido!",
-                Error = "Bad Request",
-                StackTrace = "API Authentication - API/Controllers/UsuariosControllers"
+                Errors = ["Token de atualização inválido"],
+                StackTrace = "API Authentication"
             });
         }
 
@@ -138,8 +143,8 @@ public class UsuariosController : ControllerBase
             {
                 StatusCode = 400,
                 Message = "Token de atualização inválido!",
-                Error = "Bad Request",
-                StackTrace = "API Authentication - API/Controllers/UsuariosControllers"
+                Errors= ["Bad Request"],
+                StackTrace = "API Authentication"
             });
         }
 
@@ -151,8 +156,8 @@ public class UsuariosController : ControllerBase
             {
                 StatusCode = 400,
                 Message = "Token de atualização inválido",
-                Error = "JWT inválido",
-                StackTrace = "API Authentication - API/Controllers/UsuariosControllers"
+                Errors = ["JWT inválido"],
+                StackTrace = "API Authentication"
             });
         }
 
@@ -177,8 +182,8 @@ public class UsuariosController : ControllerBase
             {
                 StatusCode = 400,
                 Message = "Usuário não encontrado",
-                Error = "Bad Request",
-                StackTrace = "API Authentication - API/Controllers/UsuariosControllers"
+                Errors = ["Bad Request"],
+                StackTrace = "API Authentication"
             });
         }
         usuario.RefreshToken = null;

@@ -22,8 +22,8 @@ public static class ExceptionHandlingMiddleware
                     {
                         StatusCode = (int)HttpStatusCode.InternalServerError,
                         Message = "Ocorreu um erro ao processar a ação desejada. Contate o Administrador do Sistema",
-                        Error = contextFeature?.Error.Message,
-                        StackTrace = contextFeature?.Error.StackTrace
+                        Errors = [contextFeature!.Error.Message],
+                        StackTrace = contextFeature!.Error.StackTrace
 
                     }
                     );

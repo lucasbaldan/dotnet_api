@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace dotnet_api.Database;
-public class BDContext : IdentityDbContext<Usuario>
+public class BDContext : IdentityDbContext<Usuario, GrupoUsuarios, string>
 {
     public BDContext(DbContextOptions<BDContext> options) : base(options)
     {
@@ -16,6 +16,10 @@ public class BDContext : IdentityDbContext<Usuario>
     {
         modelBuilder.ApplyConfiguration(new ProdutoConfiguration());
         modelBuilder.ApplyConfiguration(new CategoriaConfiguration());
+        
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Usuario>().ToTable("usuarios");
+        modelBuilder.Entity<GrupoUsuarios>().ToTable("grupos_usuarios");
     }
 }

@@ -9,7 +9,7 @@ namespace dotnet_api.Database.TableConfigurations
 
         public void Configure(EntityTypeBuilder<Categoria> builder)
         {
-            builder.ToTable("CATEGORIAS");
+            builder.ToTable("categorias");
             builder.HasKey(c => c.Id);
             builder.Property(c => c.Nome).IsRequired().HasMaxLength(255);
             builder.Property(c => c.Descricao).HasMaxLength(255);

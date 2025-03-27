@@ -1,6 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace dotnet_api.Services;
@@ -9,7 +10,13 @@ public class JWTService : IJWTService
 {
     public string GenerateRefreshToken()
     {
-        throw new NotImplementedException();
+        var secureRandom = new byte[128];
+
+        using var randomNumber = RandomNumberGenerator.Create();
+        randomNumber.GetBytes(secureRandom);
+
+        var refreshToken = Convert.ToBase64String(secureRandom);
+        return refreshToken;
     }
 
     public JwtSecurityToken GerarToken(IEnumerable<Claim> claims, IConfiguration _config)
@@ -51,7 +58,7 @@ public class JWTService : IJWTService
         var tokenHandler = new JwtSecurityTokenHandler();
         var dadosToken = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
 
-        if(securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
         {
             throw new SecurityTokenException("Token de autenticação inválido");
         }
