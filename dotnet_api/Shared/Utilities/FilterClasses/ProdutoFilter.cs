@@ -1,4 +1,4 @@
-﻿namespace dotnet_api.Utilities.FilterClasses;
+﻿namespace dotnet_api.Shared.Utilities.FilterClasses;
 
 public class ProdutoFilter
 {

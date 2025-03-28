@@ -1,5 +1,6 @@
 ﻿using dotnet_api.Database.TableConfigurations;
 using dotnet_api.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,5 +22,6 @@ public class BDContext : IdentityDbContext<Usuario, GrupoUsuarios, string>
 
         modelBuilder.Entity<Usuario>().ToTable("usuarios");
         modelBuilder.Entity<GrupoUsuarios>().ToTable("grupos_usuarios");
+        modelBuilder.Entity<IdentityUserRole<string>>().ToTable("usuarios_grupo_usuarios");
     }
 }

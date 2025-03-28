@@ -1,7 +1,7 @@
 ﻿using dotnet_api.Database;
 using dotnet_api.Models;
-using dotnet_api.Utilities;
-using dotnet_api.Utilities.FilterClasses;
+using dotnet_api.Shared.Utilities;
+using dotnet_api.Shared.Utilities.FilterClasses;
 using Microsoft.EntityFrameworkCore;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 

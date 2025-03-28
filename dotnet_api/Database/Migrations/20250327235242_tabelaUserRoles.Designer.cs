@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using dotnet_api.Database;
 
@@ -11,9 +12,11 @@ using dotnet_api.Database;
 namespace dotnet_api.Database.Migrations
 {
     [DbContext(typeof(BDContext))]
-    partial class BDContextModelSnapshot : ModelSnapshot
+    [Migration("20250327235242_tabelaUserRoles")]
+    partial class tabelaUserRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -172,9 +175,6 @@ namespace dotnet_api.Database.Migrations
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
-
-                    b.Property<string>("PermissoesJson")
-                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 

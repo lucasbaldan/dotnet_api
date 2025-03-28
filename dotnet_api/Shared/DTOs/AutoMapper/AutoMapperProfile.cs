@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
 using dotnet_api.Models;
+using dotnet_api.Shared.DTOs;
 
-namespace dotnet_api.DTOs.AutoMapper;
+namespace dotnet_api.Shared.DTOs.AutoMapper;
 
 public class AutoMapperProfile : Profile
 {

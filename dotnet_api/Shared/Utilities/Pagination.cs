@@ -1,4 +1,4 @@
-﻿namespace dotnet_api.Utilities;
+﻿namespace dotnet_api.Shared.Utilities;
 
 public class Pagination
 {
@@ -8,6 +8,6 @@ public class Pagination
     public int PageSize
     {
         get => _pageSize;
-        set => _pageSize = (value > _maxPageSize || value == 0) ? _maxPageSize : value;
+        set => _pageSize = value > _maxPageSize || value == 0 ? _maxPageSize : value;
     }
 }

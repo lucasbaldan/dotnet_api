@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace dotnet_api.Helpers;
+namespace dotnet_api.Shared.Helpers;
 
 public static class ErrorFormatters
 {

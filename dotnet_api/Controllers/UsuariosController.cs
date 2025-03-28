@@ -1,12 +1,12 @@
-﻿using dotnet_api.DTOs;
-using dotnet_api.Models;
-using dotnet_api.Helpers;
+﻿using dotnet_api.Models;
 using dotnet_api.Services;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
+using dotnet_api.Shared.Helpers;
+using dotnet_api.Shared.DTOs;
 
 namespace dotnet_api.Controllers;
 
@@ -16,10 +16,10 @@ public class UsuariosController : ControllerBase
 {
     private readonly IJWTService _jwtService;
     private readonly UserManager<Usuario> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly RoleManager<GrupoUsuarios> _roleManager;
     private readonly IConfiguration _config;
 
-    public UsuariosController(IJWTService jwtService, UserManager<Usuario> userManager, RoleManager<IdentityRole> roleManager, IConfiguration config)
+    public UsuariosController(IJWTService jwtService, UserManager<Usuario> userManager, RoleManager<GrupoUsuarios> roleManager, IConfiguration config)
     {
         _jwtService = jwtService;
         _userManager = userManager;
@@ -57,8 +57,8 @@ public class UsuariosController : ControllerBase
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, usuario.UserName!),
-            new Claim(ClaimTypes.NameIdentifier, usuario.Id)
+            new (ClaimTypes.Name, usuario.UserName!),
+            new (ClaimTypes.NameIdentifier, usuario.Id)
         };
 
         var token = _jwtService.GerarToken(claims, _config);
@@ -116,7 +116,7 @@ public class UsuariosController : ControllerBase
                 StackTrace = "API Authentication"
             });
         }
-        return Ok(new { message = "Usuário criado com sucesso" });
+        return Ok();
     }
 
     [HttpPost]
@@ -156,7 +156,7 @@ public class UsuariosController : ControllerBase
             {
                 StatusCode = 400,
                 Message = "Token de atualização inválido",
-                Errors = ["JWT inválido"],
+                Errors = ["Refresh Token inválido, Realize Login Novamente"],
                 StackTrace = "API Authentication"
             });
         }
@@ -182,7 +182,7 @@ public class UsuariosController : ControllerBase
             {
                 StatusCode = 400,
                 Message = "Usuário não encontrado",
-                Errors = ["Bad Request"],
+                Errors = ["Usuário não encontrado"],
                 StackTrace = "API Authentication"
             });
         }

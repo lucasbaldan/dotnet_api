@@ -13,6 +13,7 @@ using System.Text.Json.Serialization;
 using dotnet_api.Repositories.UnitOfWork;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using dotnet_api.Shared.DTOs.AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
