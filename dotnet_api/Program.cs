@@ -5,7 +5,6 @@ using Asp.Versioning;
 using dotnet_api.Services;
 using dotnet_api.Middlewares;
 using dotnet_api.Repositories;
-using dotnet_api.DTOs.AutoMapper;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
