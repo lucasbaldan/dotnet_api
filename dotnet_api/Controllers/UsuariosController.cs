@@ -12,20 +12,12 @@ namespace dotnet_api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UsuariosController : ControllerBase
+public class UsuariosController(IJWTService jwtService, UserManager<Usuario> userManager, RoleManager<GrupoUsuarios> roleManager, IConfiguration config) : ControllerBase
 {
-    private readonly IJWTService _jwtService;
-    private readonly UserManager<Usuario> _userManager;
-    private readonly RoleManager<GrupoUsuarios> _roleManager;
-    private readonly IConfiguration _config;
-
-    public UsuariosController(IJWTService jwtService, UserManager<Usuario> userManager, RoleManager<GrupoUsuarios> roleManager, IConfiguration config)
-    {
-        _jwtService = jwtService;
-        _userManager = userManager;
-        _roleManager = roleManager;
-        _config = config;
-    }
+    private readonly IJWTService _jwtService = jwtService;
+    private readonly UserManager<Usuario> _userManager = userManager;
+    private readonly RoleManager<GrupoUsuarios> _roleManager = roleManager;
+    private readonly IConfiguration _config = config;
 
     [HttpPost]
     [Route("login")]
@@ -44,7 +36,7 @@ public class UsuariosController : ControllerBase
         }
 
         var usuario = await _userManager.FindByNameAsync(loginDTO.Username);
-        if (usuario is null || await _userManager.CheckPasswordAsync(usuario, loginDTO.Password))
+        if (usuario is null || !await _userManager.CheckPasswordAsync(usuario, loginDTO.Password))
         {
             return Unauthorized(new ErrorResponse()
             {
@@ -82,8 +74,8 @@ public class UsuariosController : ControllerBase
     }
 
     [HttpPost]
-    [Route("register")]
-    public async Task<ActionResult> Register([FromBody] RegisterDTO register)
+    [Route("create")]
+    public async Task<ActionResult> Create([FromBody] RegisterDTO register)
     {
         var userExists = await _userManager.FindByEmailAsync(register.Email!);
 
@@ -105,17 +97,109 @@ public class UsuariosController : ControllerBase
             UserName = register.Username
         };
 
-        var result = await _userManager.CreateAsync(usuario, register.Password);
-        if (!result.Succeeded)
+        var resultUser = await _userManager.CreateAsync(usuario, register.Password);
+        if (!resultUser.Succeeded)
         {
             return StatusCode(StatusCodes.Status400BadRequest, new ErrorResponse()
             {
                 StatusCode = 400,
                 Message = "Falha ao registrar usuário na plataforma",
-                Errors = ErrorFormatters.FormatarErrosIdentity(result),
+                Errors = ErrorFormatters.FormatarErrosIdentity(resultUser),
                 StackTrace = "API Authentication"
             });
         }
+
+        var grupoExiste = await _roleManager.FindByIdAsync(register.GrupoUsuariosID);
+        if (grupoExiste is null || grupoExiste.Name is null)
+        {
+            return BadRequest(new ErrorResponse()
+            {
+                StatusCode = 400,
+                Message = "Grupo de Usuários não encontrado ou inexistente na base de dados",
+                Errors = ["Grupo de Usuários não encontrado ou inexistente na base de dados"],
+                StackTrace = "API Authentication"
+            });
+        }
+
+        var resultGrupo = await _userManager.AddToRoleAsync(usuario, grupoExiste.Name);
+        
+        if (!resultGrupo.Succeeded)
+        {
+            return BadRequest(new ErrorResponse()
+            {
+                StatusCode = 400,
+                Message = "Grupo de Usuários não encontrado ou inexistente na base de dados",
+                Errors = ["Grupo de Usuários não encontrado ou inexistente na base de dados"],
+                StackTrace = "API Authentication"
+            });
+        }
+
+        return Ok();
+    }
+
+    [HttpPost]
+    [Route("update")]
+    public async Task<ActionResult> Update([FromBody] RegisterDTO register)
+    {
+        if(register.Id is null)
+        {
+            return BadRequest(new ErrorResponse()
+            {
+                StatusCode = 400,
+                Message = "ID do usuário não informado",
+                Errors = ["ID do usuário não informado"],
+                StackTrace = "API Authentication"
+            });
+        }
+
+        var usuario = await _userManager.FindByIdAsync(register.Id);
+
+        if (usuario == null)
+        {
+            return BadRequest(new ErrorResponse()
+            {
+                StatusCode = 400,
+                Message = "Usuário não encontrado na base de dados",
+                Errors = ["Usuário não encontrado na base de dados"],
+                StackTrace = "API Authentication"
+            });
+        }
+
+        usuario.Email = register.Email;
+        usuario.UserName = register.Username;
+        usuario.PasswordHash = register.Password == null ? usuario.PasswordHash : _userManager.PasswordHasher.HashPassword(usuario, register.Password);
+
+        var resultUser = await _userManager.UpdateAsync(usuario);
+        if (!resultUser.Succeeded)
+        {
+            return StatusCode(StatusCodes.Status400BadRequest, new ErrorResponse()
+            {
+                StatusCode = 400,
+                Message = "Falha ao atualizar usuário na plataforma",
+                Errors = ErrorFormatters.FormatarErrosIdentity(resultUser),
+                StackTrace = "API Authentication"
+            });
+        }
+
+        var newGrupoExiste = await _roleManager.FindByIdAsync(register.GrupoUsuariosID);
+        if (newGrupoExiste is null || newGrupoExiste.Name is null)
+        {
+            return BadRequest(new ErrorResponse()
+            {
+                StatusCode = 400,
+                Message = "Grupo de Usuários não encontrado ou inexistente na base de dados",
+                Errors = ["Grupo de Usuários não encontrado ou inexistente na base de dados"],
+                StackTrace = "API Authentication"
+            });
+        }
+
+        var gruposVinculado = await _userManager.GetRolesAsync(usuario);
+        if (gruposVinculado.FirstOrDefault() != newGrupoExiste.Id)
+        {
+            await _userManager.RemoveFromRolesAsync(usuario, gruposVinculado);
+            await _userManager.AddToRoleAsync(usuario, newGrupoExiste.Name);
+        }
+
         return Ok();
     }
 

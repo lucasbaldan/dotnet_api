@@ -12,14 +12,9 @@ namespace dotnet_api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 //[Authorize]
-public class GrupoUsuariosController : ControllerBase
+public class GrupoUsuariosController(RoleManager<GrupoUsuarios> roleManager) : ControllerBase
 {
-    private readonly RoleManager<GrupoUsuarios> _roleManager;
-
-    public GrupoUsuariosController(RoleManager<GrupoUsuarios> roleManager)
-    {
-        _roleManager = roleManager;
-    }
+    private readonly RoleManager<GrupoUsuarios> _roleManager = roleManager;
 
     [HttpPost]
     public async Task<ActionResult> Create([FromBody] GrupoUsuariosDTO gu)

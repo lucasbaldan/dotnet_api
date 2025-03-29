@@ -5,7 +5,6 @@ namespace dotnet_api.Shared.DTOs;
 public class LoginDTO
 {
     [Required(ErrorMessage = "O campo --email-- é obrigatório.")]
-    [EmailAddress(ErrorMessage = "O campo --email-- deve ser um endereço válido.")]
     public required string Username { get; set; }
 
     [Required(ErrorMessage = "O campo --senha-- é obrigatório.")]
