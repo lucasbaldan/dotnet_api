@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using dotnet_api.Shared.Utilities;
 using dotnet_api.Shared.Utilities.FilterClasses;
 using dotnet_api.Shared.DTOs;
+using dotnet_api.Shared.Enums;
 
 namespace dotnet_api.Controllers
 {
@@ -22,6 +23,7 @@ namespace dotnet_api.Controllers
         private readonly IMapper _mapper = mapper;
 
         [HttpPost("getAll")]
+        [Authorize(Policy = "1")]
         public async Task<ActionResult<IEnumerable<ProdutoDTO>>> Get([FromQuery] Pagination paginacao, [FromBody] ProdutoFilter? filtro)
         {
             var produtos = await _transaction.ProdutoRepository.Get(paginacao, filtro);

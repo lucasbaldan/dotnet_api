@@ -15,6 +15,9 @@ using dotnet_api.Shared.DTOs.AutoMapper;
 using dotnet_api.Repositories.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using dotnet_api.Shared.Enums;
+using dotnet_api.Shared.Permission;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,7 +81,7 @@ builder.Services.AddIdentity<Usuario, GrupoUsuarios>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 4;
     options.Password.RequiredUniqueChars = 0;
-    
+
     options.User.RequireUniqueEmail = true;
 
     options.Lockout.MaxFailedAccessAttempts = 5;
@@ -110,6 +113,10 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("1", policy =>
+        policy.Requirements.Add(new PermissionRequirement((int)PermissoesEnum.produtosRead)));
+
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 builder.Services.AddCors(options =>
@@ -135,6 +142,8 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<ITransaction, Transaction>();
 builder.Services.AddScoped<IJWTService, JWTService>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
+
 
 
 var app = builder.Build();
