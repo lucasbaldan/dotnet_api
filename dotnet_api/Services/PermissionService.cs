@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 
-namespace dotnet_api.Shared.Permission;
+namespace dotnet_api.Services;
 
-public class PermissionHandler(RoleManager<GrupoUsuarios> roleManager, UserManager<Usuario> userManager) : AuthorizationHandler<PermissionRequirement>
+public class PermissionService(RoleManager<GrupoUsuarios> roleManager, UserManager<Usuario> userManager) : AuthorizationHandler<PermissionRequirement>
 {
     public readonly RoleManager<GrupoUsuarios> _roleManager = roleManager;
     public readonly UserManager<Usuario> _userManager = userManager;

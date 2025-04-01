@@ -4,15 +4,11 @@ using Microsoft.EntityFrameworkCore;
 namespace dotnet_api.Repositories.UnitOfWork
 {
 
-    public class Transaction : ITransaction
+    public class Transaction(BDContext db) : ITransaction
     {
-        private readonly BDContext _db;
+        private readonly BDContext _db = db;
         private IProdutoRepository? _produtoRepository;
 
-        public Transaction(BDContext db)
-        {
-            _db = db;
-        }
         public IProdutoRepository ProdutoRepository
         {
             get
