@@ -2,6 +2,8 @@
 using dotnet_api.Shared.DTOs;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Immutable;
+using System.Security.Cryptography.X509Certificates;
 
 namespace dotnet_api_unit_test.UnitTests;
 
@@ -36,13 +38,13 @@ public class ProdutoUnitTest(XunitUnitTests controller) : IClassFixture<XunitUni
             Descricao = "Descrição do produto teste",
             Preco = 10.00m,
             CategoriaId = 1,
-            Estoque = 1      
+            Estoque = 1
         });
 
-        result.Should().BeOfType<CreatedAtActionResult>()
-            .Which.Value.Should().NotBeNull();
+        var createdResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
 
-        result.Should().BeOfType<CreatedAtActionResult>()
-            .Which.StatusCode.Should().Be(201);
+        createdResult.StatusCode.Should().Be(201);
+        createdResult.Value.Should().NotBeNull();
+        createdResult.Value.Should().BeAssignableTo<CreatedResponseDTO>().Which.Id.Should().NotBeNull();
     }
 }

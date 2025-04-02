@@ -51,7 +51,7 @@ namespace dotnet_api.Controllers
             if (produtoCriado == null) return BadRequest();
 
             await _transaction.Commit();
-            return CreatedAtAction(nameof(Get), new { id = produtoCriado.Id }, new { id = produtoCriado.Id });
+            return CreatedAtAction(nameof(Get), new { id = produtoCriado.Id }, new CreatedResponseDTO() { Id = produtoCriado.Id.ToString() });
         }
 
         [HttpPut("{id:int:min(1)}")]
