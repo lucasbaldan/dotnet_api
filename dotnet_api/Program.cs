@@ -5,6 +5,7 @@ using dotnet_api.Database;
 using dotnet_api.Services;
 using dotnet_api.Middlewares;
 using dotnet_api.Repositories;
+using Microsoft.OpenApi.Models;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,8 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.RateLimiting;
 using dotnet_api.Shared.DTOs.AutoMapper;
 using dotnet_api.Repositories.UnitOfWork;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.OpenApi.Models;
-using dotnet_api.Shared.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -124,6 +123,8 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("fixed", options =>
@@ -140,7 +141,6 @@ builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<ITransaction, Transaction>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionService>();
-
 
 
 var app = builder.Build();

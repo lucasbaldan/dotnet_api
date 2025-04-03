@@ -30,7 +30,7 @@ namespace dotnet_api.Controllers
         {
             var produtos = await _transaction.ProdutoRepository.Get(paginacao, filtro);
             if (produtos == null) throw new Exception("Ocorreu um erro inesperado ao consultar os registro na base de dados");
-            else if (!produtos.Any()) return NotFound();
+  
             return Ok(_mapper.Map<IEnumerable<ProdutoDTO>>(produtos));
         }
 
