@@ -125,6 +125,13 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddMemoryCache();
 
+builder.Services.AddHttpClient("ViaCep", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ExternalServices:ViaCep"]!);
+    client.DefaultRequestHeaders.Accept.Clear();
+    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+});
+
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("fixed", options =>
@@ -138,9 +145,11 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
+builder.Services.AddScoped<IPessoaRepository, PessoaRepository>();
 builder.Services.AddScoped<ITransaction, Transaction>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionService>();
+builder.Services.AddScoped<IViaCepService, ViaCepService>();
 
 
 var app = builder.Build();

@@ -8,12 +8,21 @@ namespace dotnet_api.Repositories.UnitOfWork
     {
         private readonly BDContext _db = db;
         private IProdutoRepository? _produtoRepository;
+        private IPessoaRepository? _pessoaRepository;
 
         public IProdutoRepository ProdutoRepository
         {
             get
             {
                 return _produtoRepository ??= new ProdutoRepository(_db);
+            }
+        }
+
+        public IPessoaRepository PessoaRepository
+        {
+            get
+            {
+                return _pessoaRepository ??= new PessoaRepository(_db);
             }
         }
 
@@ -46,6 +55,7 @@ namespace dotnet_api.Repositories.UnitOfWork
     public interface ITransaction
     {
         IProdutoRepository ProdutoRepository { get; }
+        IPessoaRepository PessoaRepository { get; }
         void Dispose();
         Task<bool> Commit();
     }
