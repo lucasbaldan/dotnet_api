@@ -20,8 +20,10 @@ namespace dotnet_api.Controllers
         [HttpGet("{cep:int:min(1)}")]
         public async Task<ActionResult<ViaCepResponseDTO>> Get(string cep)
         {
+
+            if (cep.Length != 8) throw new ArgumentException("O CEP a ser consultado deve conter 8 dígitos.");
+
             var consultaApi = await _viaCepService.GetEnderecoByCEP(cep);
-            if (consultaApi == null) return NotFound();
 
             return Ok(consultaApi);
         }

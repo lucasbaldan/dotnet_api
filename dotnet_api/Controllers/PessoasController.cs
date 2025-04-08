@@ -10,6 +10,7 @@ using dotnet_api.Shared.Utilities.FilterClasses;
 using dotnet_api.Shared.DTOs;
 using dotnet_api.Shared.Filters;
 using dotnet_api.Shared.Enums;
+using dotnet_api.Services;
 
 namespace dotnet_api.Controllers
 {
@@ -18,10 +19,11 @@ namespace dotnet_api.Controllers
     [ApiController]
     //[Authorize]
     [EnableRateLimiting("fixed")]
-    public class PessoasController(ITransaction transaction, IMapper mapper) : ControllerBase
+    public class PessoasController(ITransaction transaction, IMapper mapper, IViaCepService viaCep) : ControllerBase
     {
         private readonly ITransaction _transaction = transaction;
         private readonly IMapper _mapper = mapper;
+        private readonly IViaCepService _viaCep = viaCep;
 
         [PermissionAuthorize((int)PermissoesEnum.produtosRead)]
         [HttpPost("getAll")]
@@ -30,7 +32,7 @@ namespace dotnet_api.Controllers
         {
             //var produtos = await _transaction.ProdutoRepository.Get(paginacao, filtro);
             //if (produtos == null) throw new Exception("Ocorreu um erro inesperado ao consultar os registro na base de dados");
-  
+
             //return Ok(_mapper.Map<IEnumerable<ProdutoDTO>>(produtos));
 
             throw new NotImplementedException("");
@@ -65,6 +67,40 @@ namespace dotnet_api.Controllers
 
             await _transaction.Commit();
             return Ok(pessoaAtualizado);
+        }
+
+
+        [HttpPut("updateEndereco{id:int:min(1)}")]
+        public async Task<ActionResult> UpdateEndereco(int id, UpdateEnderecoDTO atualizacaoDTO)
+        {
+            if (ModelState.IsValid == false) return BadRequest(new ErrorResponse()
+            {
+                Errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage),
+                Message = "Ocorreu um erro ao processar a operação desejada",
+                StatusCode = StatusCodes.Status400BadRequest
+            });
+
+            if (id != atualizacaoDTO.Id_pessoa) throw new FormatException("A requisição foi efetuada de maneira incorreta");
+
+            var resultViaCep = await _viaCep.GetEnderecoByCEP(atualizacaoDTO.Cep.ToString()!);
+
+            if (resultViaCep == null) return BadRequest(new ErrorResponse()
+            {
+                Message = "Ocorreu um erro ao processar a operação desejada",
+                StatusCode = StatusCodes.Status404NotFound
+            });
+
+            var pessoa = await _transaction.PessoaRepository.Get(id);
+            if (pessoa == null) return NotFound();
+            pessoa.Cep = resultViaCep.Cep;
+            pessoa.Logradouro = resultViaCep.Logradouro;
+            pessoa.Cidade = resultViaCep.Localidade;
+            pessoa.Estado = resultViaCep.Uf;
+
+            Pessoa pessoaAtualizado = _transaction.PessoaRepository.Update(pessoa);
+
+            await _transaction.Commit();
+            return Ok(_mapper.Map<PessoaDTO>(pessoaAtualizado));
         }
 
         [HttpDelete("{id:int:min(1)}")]

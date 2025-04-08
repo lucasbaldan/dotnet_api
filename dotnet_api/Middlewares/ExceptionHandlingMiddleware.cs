@@ -1,5 +1,6 @@
 ﻿using dotnet_api.Models;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using System.Net;
 using System.Text.Json;
 
@@ -13,14 +14,27 @@ public static class ExceptionHandlingMiddleware
         {
             errorApp.Run(async context =>
             {
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                context.Response.ContentType = "application/json";
 
                 var contextFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+                var exception = contextFeature?.Error;
+                var statusCode = (int)HttpStatusCode.InternalServerError;
+                
+                statusCode = exception switch
+                {
+                    ArgumentException => (int)HttpStatusCode.BadRequest,
+                    FormatException => (int)HttpStatusCode.BadRequest,
+                    KeyNotFoundException => (int)HttpStatusCode.NotFound,
+                    UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
+                    _ => (int)HttpStatusCode.InternalServerError,
+                };
+
+                context.Response.StatusCode = statusCode;
+                context.Response.ContentType = "application/json";
+
                 var response = JsonSerializer.Serialize(
                     new ErrorResponse
                     {
-                        StatusCode = (int)HttpStatusCode.InternalServerError,
+                        StatusCode = statusCode,
                         Message = "Ocorreu um erro ao processar a ação desejada. Contate o Administrador do Sistema",
                         Errors = [contextFeature!.Error.Message],
                         StackTrace = contextFeature!.Error.StackTrace

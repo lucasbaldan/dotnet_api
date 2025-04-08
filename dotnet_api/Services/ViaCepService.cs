@@ -1,4 +1,6 @@
 ﻿using dotnet_api.Shared.DTOs;
+using Microsoft.AspNetCore.Http.HttpResults;
+using System.Net;
 using System.Text.Json;
 
 namespace dotnet_api.Services;
@@ -22,17 +24,25 @@ public class ViaCepService : IViaCepService
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadAsStringAsync();
+
+            using var jsonDoc = JsonDocument.Parse(result);
+            if (jsonDoc.RootElement.TryGetProperty("erro", out var erro))
+            {
+                throw new ArgumentException("CEP com formato inválido ao padrão nacional");
+            }
+
             var retorno = JsonSerializer.Deserialize<ViaCepResponseDTO>(result, _options);
 
             return retorno ?? throw new Exception("Erro ao processar informações do CEP desejado");
         }
+        else if (response.StatusCode == HttpStatusCode.NotFound)
+            throw new KeyNotFoundException("CEP não encontrado na base nacional");
+
         else
-        {
-            throw new Exception("Erro ao consultar o CEP");
-        }
+            throw new Exception("Ocorreu um erro ao consultar o CEP desejado na base Nacional.");
     }
 
-    public Task<ViaCepResponseDTO> SaveAsync(ViaCepResponseDTO endereco)
+    public Task<ViaCepResponseDTO> GetAndSaveAsync(ViaCepResponseDTO endereco)
     {
         throw new NotImplementedException();
     }
@@ -42,5 +52,5 @@ public interface IViaCepService
 {
     Task<ViaCepResponseDTO> GetEnderecoByCEP(string cep);
 
-    Task<ViaCepResponseDTO> SaveAsync(ViaCepResponseDTO endereco);
+    Task<ViaCepResponseDTO> GetAndSaveAsync(ViaCepResponseDTO endereco);
 }
