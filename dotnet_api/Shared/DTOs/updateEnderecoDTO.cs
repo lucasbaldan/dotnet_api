@@ -8,6 +8,7 @@ public class UpdateEnderecoDTO
     public int? Id_pessoa { get; set; }
 
     [Required(ErrorMessage = "O campo --cep-- é obrigatório.")]
-    public int? Cep { get; set; }
+    [RegularExpression(@"^\d{8}$", ErrorMessage = "O campo --cep-- deve conter exatamente 8 dígitos.")]
+    public string? Cep { get; set; }
 
 }

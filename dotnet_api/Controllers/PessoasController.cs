@@ -70,7 +70,7 @@ namespace dotnet_api.Controllers
         }
 
 
-        [HttpPut("updateEndereco{id:int:min(1)}")]
+        [HttpPut("updateEndereco/{id:int:min(1)}")]
         public async Task<ActionResult> UpdateEndereco(int id, UpdateEnderecoDTO atualizacaoDTO)
         {
             if (ModelState.IsValid == false) return BadRequest(new ErrorResponse()
@@ -82,7 +82,7 @@ namespace dotnet_api.Controllers
 
             if (id != atualizacaoDTO.Id_pessoa) throw new FormatException("A requisição foi efetuada de maneira incorreta");
 
-            var resultViaCep = await _viaCep.GetEnderecoByCEP(atualizacaoDTO.Cep.ToString()!);
+            var resultViaCep = await _viaCep.GetEnderecoByCEP(atualizacaoDTO.Cep!);
 
             if (resultViaCep == null) return BadRequest(new ErrorResponse()
             {
@@ -90,8 +90,8 @@ namespace dotnet_api.Controllers
                 StatusCode = StatusCodes.Status404NotFound
             });
 
-            var pessoa = await _transaction.PessoaRepository.Get(id);
-            if (pessoa == null) return NotFound();
+            var pessoa = await _transaction.PessoaRepository.Get(id) ?? throw new KeyNotFoundException("Registro de Pessoa não encotrado na base de dados");
+            
             pessoa.Cep = resultViaCep.Cep;
             pessoa.Logradouro = resultViaCep.Logradouro;
             pessoa.Cidade = resultViaCep.Localidade;
