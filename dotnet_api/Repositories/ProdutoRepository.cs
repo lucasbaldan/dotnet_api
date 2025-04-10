@@ -7,13 +7,9 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace dotnet_api.Repositories;
 
-public class ProdutoRepository : IProdutoRepository
+public class ProdutoRepository(BDContext db) : IProdutoRepository
 {
-    private readonly BDContext _db;
-    public ProdutoRepository(BDContext db)
-    {
-        _db = db;
-    }
+    private readonly BDContext _db = db;
 
     public async Task<IEnumerable<Produto>> Get()
     {
@@ -43,7 +39,9 @@ public class ProdutoRepository : IProdutoRepository
             if (filtro.CategoriaId != null) query = query.Where(p => p.CategoriaId == filtro.CategoriaId);
         }
 
-        return await query.OrderByDescending(p => p.Id)
+        return await query.
+            Include(p => p.Categoria).
+            OrderByDescending(p => p.Id)
             .Skip((paginacao.PageNumber - 1) * paginacao.PageSize)
             .Take(paginacao.PageSize)
             .AsNoTracking()
@@ -53,7 +51,7 @@ public class ProdutoRepository : IProdutoRepository
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        return await _db.Produtos.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+        return await _db.Produtos.FirstOrDefaultAsync(p => p.Id == id);
     }
     public Produto Create(Produto produto)
     {

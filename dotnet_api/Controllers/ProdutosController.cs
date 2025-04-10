@@ -16,14 +16,14 @@ namespace dotnet_api.Controllers
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     [EnableRateLimiting("fixed")]
     public class ProdutosController(ITransaction transaction, IMapper mapper) : ControllerBase
     {
         private readonly ITransaction _transaction = transaction;
         private readonly IMapper _mapper = mapper;
 
-        [PermissionAuthorize((int)PermissoesEnum.produtosRead)]
+        //[PermissionAuthorize((int)PermissoesEnum.produtosRead)]
         [HttpPost("getAll")]
 
         public async Task<ActionResult<IEnumerable<ProdutoDTO>>> Get([FromQuery] Pagination paginacao, [FromBody] ProdutoFilter? filtro)

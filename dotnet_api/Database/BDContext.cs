@@ -1,5 +1,6 @@
 ﻿using dotnet_api.Database.TableConfigurations;
 using dotnet_api.Models;
+using dotnet_api.Shared.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

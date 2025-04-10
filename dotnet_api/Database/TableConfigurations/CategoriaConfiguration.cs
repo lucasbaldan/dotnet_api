@@ -1,4 +1,5 @@
 ﻿using dotnet_api.Models;
+using dotnet_api.Shared.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

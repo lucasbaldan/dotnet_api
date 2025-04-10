@@ -9,4 +9,6 @@ public class ProdutoDTO
     public double Estoque { get; set; }
     public DateTime DataCadastro { get; set; }
     public int CategoriaId { get; set; }
+
+    public CategoriaDTO? Categoria { get; set; } // <- Navegação
 }
