@@ -146,6 +146,7 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<IPessoaRepository, PessoaRepository>();
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<ITransaction, Transaction>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionService>();

@@ -1,9 +1,8 @@
-﻿using dotnet_api.Database.TableConfigurations;
-using dotnet_api.Models;
-using dotnet_api.Shared.DTOs;
+﻿using dotnet_api.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using dotnet_api.Database.TableConfigurations;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace dotnet_api.Database;
 public class BDContext(DbContextOptions<BDContext> options) : IdentityDbContext<Usuario, GrupoUsuarios, string>(options)

@@ -7,7 +7,7 @@ public class Categoria
 {
     public Categoria()
     {
-        Produtos = new Collection<Produto>();
+        Produtos = [];
     }
    
     public int Id { get; set; }

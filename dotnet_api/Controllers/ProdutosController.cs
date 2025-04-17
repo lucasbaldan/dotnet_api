@@ -29,9 +29,8 @@ namespace dotnet_api.Controllers
         public async Task<ActionResult<IEnumerable<ProdutoDTO>>> Get([FromQuery] Pagination paginacao, [FromBody] ProdutoFilter? filtro)
         {
             var produtos = await _transaction.ProdutoRepository.Get(paginacao, filtro);
-            if (produtos == null) throw new Exception("Ocorreu um erro inesperado ao consultar os registro na base de dados");
   
-            return Ok(_mapper.Map<IEnumerable<ProdutoDTO>>(produtos));
+            return Ok(produtos == null ? [] : _mapper.Map<IEnumerable<ProdutoDTO>>(produtos));
         }
 
         [HttpGet("{id:int:min(1)}")]

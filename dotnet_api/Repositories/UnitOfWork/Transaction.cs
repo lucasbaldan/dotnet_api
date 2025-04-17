@@ -9,6 +9,7 @@ namespace dotnet_api.Repositories.UnitOfWork
         private readonly BDContext _db = db;
         private IProdutoRepository? _produtoRepository;
         private IPessoaRepository? _pessoaRepository;
+        private ICategoriaRepository? _categoriaRepository;
 
         public IProdutoRepository ProdutoRepository
         {
@@ -23,6 +24,14 @@ namespace dotnet_api.Repositories.UnitOfWork
             get
             {
                 return _pessoaRepository ??= new PessoaRepository(_db);
+            }
+        }
+
+        public ICategoriaRepository CategoriaRepository
+        {
+            get
+            {
+                return _categoriaRepository ??= new CategoriaRepository(_db);
             }
         }
 
@@ -56,6 +65,7 @@ namespace dotnet_api.Repositories.UnitOfWork
     {
         IProdutoRepository ProdutoRepository { get; }
         IPessoaRepository PessoaRepository { get; }
+        ICategoriaRepository CategoriaRepository { get; }
         void Dispose();
         Task<bool> Commit();
     }
